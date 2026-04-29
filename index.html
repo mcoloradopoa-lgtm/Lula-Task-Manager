@@ -2,144 +2,126 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskMaster Lula</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
-        nav { background: #1a73e8; display: flex; padding: 15px 0; position: sticky; top: 0; z-index: 100; }
-        nav button { flex: 1; background: none; border: none; color: white; font-weight: bold; cursor: pointer; }
-        .container { padding: 20px; max-width: 500px; margin: auto; }
+        body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
+        .nav { display: flex; background: #1a73e8; position: sticky; top: 0; }
+        .nav button { flex: 1; padding: 15px; border: none; background: none; color: white; font-weight: bold; }
+        .p-20 { padding: 20px; }
+        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .view { display: none; }
-        .view.active { display: block; }
-        .card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
-        .btn-save { background: #1a73e8; color: white; border: none; font-weight: bold; }
-        .btn-csv { background: #28a745; color: white; border: none; font-weight: bold; }
-        .item { background: white; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid #1a73e8; }
+        .active { display: block; }
+        input, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn-blue { background: #1a73e8; color: white; font-weight: bold; border: none; }
+        .btn-green { background: #28a745; color: white; font-weight: bold; border: none; }
+        .log-item { background: #fff; padding: 10px; border-bottom: 1px solid #ddd; font-size: 14px; }
     </style>
 </head>
 <body>
 
-<nav>
-    <button onclick="showView('agenda')">AGENDA</button>
-    <button onclick="showView('tcc1')">TCC 1</button>
-    <button onclick="showView('tcc2')">TCC 2</button>
-</nav>
+<div class="nav">
+    <button onclick="changeTab('agenda')">AGENDA</button>
+    <button onclick="changeTab('tcc1')">TCC 1</button>
+    <button onclick="changeTab('tcc2')">TCC 2</button>
+</div>
 
-<div class="container">
-    <button class="btn-csv" onclick="exportMasterCSV()">📥 BAIXAR CSV UNIFICADO</button>
+<div class="p-20">
+    <button class="btn-green" onclick="exportData()">📥 BAIXAR CSV (PIPE)</button>
 
     <div id="view-agenda" class="view active">
-        <h2>📅 Agenda</h2>
-        <div class="card">
-            <input type="text" id="taskName" placeholder="Tarefa">
-            <input type="date" id="taskDate">
-            <input type="time" id="taskTime">
-            <button class="btn-save" onclick="addAgenda()">SALVAR AGENDA</button>
-        </div>
+        <h3>📅 Agenda</h3>
+        <input type="text" id="v1a" placeholder="Tarefa">
+        <input type="date" id="v2a">
+        <input type="time" id="v3a">
+        <button class="btn-blue" onclick="add('AGENDA', 'v1a', 'v2a', 'v3a', '')">SALVAR AGENDA</button>
         <div id="list-agenda"></div>
     </div>
 
     <div id="view-tcc1" class="view">
-        <h2>🧠 TCC - Pensamentos</h2>
-        <div class="card">
-            <textarea id="p-situacao" placeholder="Situação"></textarea>
-            <input type="text" id="p-emocao" placeholder="Emoção">
-            <textarea id="p-pensamento" placeholder="Pensamento Automático"></textarea>
-            <textarea id="p-comportamento" placeholder="Comportamento Resultado"></textarea>
-            <button class="btn-save" onclick="addTCC('PENSAMENTO', ['p-situacao', 'p-emocao', 'p-pensamento', 'p-comportamento'])">SALVAR TCC 1</button>
-        </div>
+        <h3>🧠 Pensamentos (PDF 1)</h3>
+        <textarea id="v1p" placeholder="Situação"></textarea>
+        <input type="text" id="v2p" placeholder="Emoção">
+        <textarea id="v3p" placeholder="Pensamento Automático"></textarea>
+        <textarea id="v4p" placeholder="Comportamento"></textarea>
+        <button class="btn-blue" onclick="add('PENSAMENTO', 'v1p', 'v2p', 'v3p', 'v4p')">SALVAR TCC 1</button>
         <div id="list-tcc1"></div>
     </div>
 
     <div id="view-tcc2" class="view">
-        <h2>🎭 TCC - Emoções</h2>
-        <div class="card">
-            <input type="text" id="e-situacao" placeholder="Dia/Situação">
-            <input type="text" id="e-emocao" placeholder="Emoção">
-            <input type="number" id="e-intensidade" placeholder="Intensidade (0-10)">
-            <textarea id="e-reacao" placeholder="Reação/Comportamento"></textarea>
-            <button class="btn-save" onclick="addTCC('EMOCAO', ['e-situacao', 'e-emocao', 'e-intensidade', 'e-reacao'])">SALVAR TCC 2</button>
-        </div>
+        <h3>🎭 Emoções (PDF 2)</h3>
+        <input type="text" id="v1e" placeholder="Dia/Situação">
+        <input type="text" id="v2e" placeholder="Emoção">
+        <input type="number" id="v3e" placeholder="Intensidade (0-10)">
+        <textarea id="v4e" placeholder="Reação"></textarea>
+        <button class="btn-blue" onclick="add('EMOCAO', 'v1e', 'v2e', 'v3e', 'v4e')">SALVAR TCC 2</button>
         <div id="list-tcc2"></div>
     </div>
 </div>
 
 <script>
-    // Usando uma chave de banco nova para evitar conflitos
-    let db = JSON.parse(localStorage.getItem('db_lula_v11')) || [];
+    // Chave nova para forçar o reset da memória travada
+    const DB_KEY = 'db_lula_FINAL_REBOOT';
+    let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-    function showView(id) {
-        const views = ['agenda', 'tcc1', 'tcc2'];
-        views.forEach(v => document.getElementById('view-' + v).style.display = 'none');
-        document.getElementById('view-' + id).style.display = 'block';
+    function changeTab(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
         render();
     }
 
-    function save() {
-        localStorage.setItem('db_lula_v11', JSON.stringify(db));
-        render();
-    }
-
-    function addAgenda() {
-        const v1 = document.getElementById('taskName').value;
-        const v2 = document.getElementById('taskDate').value;
-        const v3 = document.getElementById('taskTime').value || "00:00";
-        if(v1 && v2) {
-            const entry = { tipo: 'AGENDA', v1, v2, v3, v4: '-', data: new Date().toLocaleString() };
-            db.push(entry);
-            scheduleNotification(entry);
-            document.getElementById('taskName').value = "";
-            save();
-        }
-    }
-
-    function addTCC(tipo, fields) {
+    function add(tipo, f1, f2, f3, f4) {
         const entry = {
             tipo: tipo,
-            v1: document.getElementById(fields[0]).value,
-            v2: document.getElementById(fields[1]).value,
-            v3: document.getElementById(fields[2]).value,
-            v4: document.getElementById(fields[3]).value,
+            c1: document.getElementById(f1).value,
+            c2: document.getElementById(f2).value,
+            c3: document.getElementById(f3).value,
+            c4: f4 ? document.getElementById(f4).value : '-',
             data: new Date().toLocaleString()
         };
-        db.push(entry);
-        fields.forEach(f => document.getElementById(f).value = "");
-        save();
+        data.push(entry);
+        localStorage.setItem(DB_KEY, JSON.stringify(data));
+        
+        // Limpa campos
+        [f1, f2, f3, f4].forEach(f => { if(f) document.getElementById(f).value = ''; });
+        
+        if(tipo === 'AGENDA') schedulePush(entry);
+        render();
+        alert("Salvo com sucesso!");
     }
 
-    function scheduleNotification(task) {
+    function schedulePush(t) {
         if (!("Notification" in window)) return;
         Notification.requestPermission().then(p => {
             if (p === "granted") {
+                const target = new Date(t.c2 + 'T' + t.c3);
                 const now = new Date();
-                const tDate = new Date(task.v2 + 'T' + task.v3);
-                let trigger = (tDate.toDateString() === now.toDateString()) ? tDate : new Date(task.v2 + 'T08:00:00');
-                const diff = trigger.getTime() - now.getTime();
-                if (diff > 0) setTimeout(() => { new Notification("📍 " + task.v1); }, diff);
+                let time = (target.toDateString() === now.toDateString()) ? target : new Date(t.c2 + 'T08:00:00');
+                const diff = time.getTime() - now.getTime();
+                if (diff > 0) setTimeout(() => { new Notification("📍 " + t.c1); }, diff);
             }
         });
     }
 
-    function exportMasterCSV() {
-        if (db.length === 0) return alert("Sem dados!");
+    function exportData() {
+        if (data.length === 0) return alert("Vazio!");
         let csv = "TIPO|CAMPO1|CAMPO2|CAMPO3|CAMPO4|DATA\n";
-        db.forEach(i => { csv += ${i.tipo}|${i.v1}|${i.v2}|${i.v3}|${i.v4}|${i.data}\n; });
+        data.forEach(i => { csv += ${i.tipo}|${i.c1}|${i.c2}|${i.c3}|${i.c4}|${i.data}\n; });
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'lula_master.csv'; a.click();
+        a.href = URL.createObjectURL(blob);
+        a.download = 'lula_backup.csv';
+        a.click();
     }
 
     function render() {
-        // Renderização simples apenas para a agenda para teste
-        const list = document.getElementById('list-agenda');
-        const filtered = db.filter(i => i.tipo === 'AGENDA');
-        list.innerHTML = filtered.map(i => <div class="item"><b>${i.v1}</b><br>${i.v2}</div>).join('');
+        const currentView = document.querySelector('.view.active').id.split('-')[1];
+        const list = document.getElementById('list-' + currentView);
+        const filtered = data.filter(i => i.tipo.toLowerCase().includes(currentView.replace('tcc','')) || (currentView === 'agenda' && i.tipo === 'AGENDA'));
+        list.innerHTML = filtered.map(i => <div class="log-item"><b>${i.c1}</b> - ${i.c2}</div>).join('');
     }
 
-    // Inicia na agenda
-    window.onload = () => { showView('agenda'); };
+    window.onload = render;
 </script>
 </body>
 </html>
