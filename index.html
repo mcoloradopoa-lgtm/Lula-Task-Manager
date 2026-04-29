@@ -7,96 +7,83 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a73e8">
     <style>
-        :root { --primary: #1a73e8; --bg: #f4f7f6; --card: #ffffff; --text: #2c3e50; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); }
-        
-        /* Menu de Navegação Superior */
-        nav { background: var(--primary); display: flex; justify-content: space-around; padding: 15px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        nav button { background: none; border: none; color: white; font-weight: bold; font-size: 0.9rem; cursor: pointer; opacity: 0.8; }
+        :root { --primary: #1a73e8; --bg: #f4f7f6; --card: #ffffff; }
+        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
+        nav { background: var(--primary); display: flex; justify-content: space-around; padding: 15px 0; position: sticky; top: 0; z-index: 100; }
+        nav button { background: none; border: none; color: white; font-weight: bold; font-size: 0.8rem; cursor: pointer; opacity: 0.7; }
         nav button.active { opacity: 1; border-bottom: 2px solid white; }
-
-        .container { padding: 20px; max-width: 500px; margin: auto; }
+        .container { padding: 20px; max-width: 600px; margin: auto; }
         .view { display: none; }
         .view.active { display: block; }
-
-        /* Estilos de Card e Input */
-        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { color: var(--primary); text-align: center; margin-top: 0; }
-        input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
+        .card { background: var(--card); padding: 18px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h2 { color: var(--primary); font-size: 1.2rem; text-align: center; margin-top: 0; }
+        input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
         button.btn-save { background: var(--primary); color: white; border: none; font-weight: bold; }
-        
-        /* Lista de Itens */
-        .list-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .del-btn { background: #fee; color: #c00; border: none; width: 35px; height: 35px; border-radius: 50%; }
-        .badge { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; }
+        .list-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+        .del-btn { position: absolute; right: 10px; top: 10px; background: #fee; color: #c00; border: none; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; }
+        .label-tcc { font-size: 0.8rem; font-weight: bold; color: #666; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
 
     <nav>
         <button onclick="showView('agenda')" id="nav-agenda" class="active">📅 AGENDA</button>
-        <button onclick="showView('tcc-pensamento')" id="nav-pensamento">🧠 PENSAMENTOS</button>
-        <button onclick="showView('tcc-emocao')" id="nav-emocao">🎭 EMOÇÕES</button>
+        <button onclick="showView('pensamentos')" id="nav-pensamentos">🧠 PENSAMENTOS</button>
+        <button onclick="showView('emocoes')" id="nav-emocoes">🎭 EMOÇÕES</button>
     </nav>
 
     <div class="container">
         
         <div id="view-agenda" class="view active">
-            <h2>Agenda Diária</h2>
+            <h2>Minha Agenda</h2>
             <div class="card">
-                <input type="text" id="taskName" placeholder="Tarefa...">
-                <input type="date" id="taskDate">
-                <input type="time" id="taskTime">
-                <button class="btn-save" onclick="addAgenda()">SALVAR TAREFA</button>
+                <input type="text" id="taskName" placeholder="O que precisa de fazer?">
+                <div style="display:flex; gap:10px;">
+                    <input type="date" id="taskDate">
+                    <input type="time" id="taskTime">
+                </div>
+                <button class="btn-save" onclick="addAgenda()">SALVAR NA AGENDA</button>
             </div>
             <div id="list-agenda"></div>
         </div>
 
-        <div id="view-tcc-pensamento" class="view">
-            <h2>Diário TCC</h2>
-            [span_0](start_span)<p style="font-size:0.8rem; color:#666; text-align:center;">Registre situações de desconforto[span_0](end_span).</p>
+        <div id="view-pensamentos" class="view">
+            <h2>Diário de Pensamentos</h2>
             <div class="card">
-                [span_1](start_span)<textarea id="p-situacao" placeholder="Situação (O que aconteceu?)[span_1](end_span)"></textarea>
-                [span_2](start_span)<input type="text" id="p-emocao" placeholder="Emoção sentida[span_2](end_span)">
-                [span_3](start_span)<textarea id="p-pensamento" placeholder="Pensamento Automático[span_3](end_span)"></textarea>
-                [span_4](start_span)<textarea id="p-comportamento" placeholder="Comportamento Resultado[span_4](end_span)"></textarea>
-                <button class="btn-save" onclick="addPensamento()">REGISTRAR PENSAMENTO</button>
+                <textarea id="p-situacao" placeholder="Situação (O que aconteceu?)"></textarea>
+                <input type="text" id="p-emocao" placeholder="Emoção sentida">
+                <textarea id="p-pensamento" placeholder="Pensamento Automático"></textarea>
+                <textarea id="p-comportamento" placeholder="Comportamento Resultado"></textarea>
+                <button class="btn-save" onclick="addItem('pensamentos', ['p-situacao', 'p-emocao', 'p-pensamento', 'p-comportamento'])">REGISTAR TCC</button>
             </div>
-            <div id="list-pensamento"></div>
+            <div id="list-pensamentos"></div>
         </div>
 
-        <div id="view-tcc-emocao" class="view">
+        <div id="view-emocoes" class="view">
             <h2>Diário de Emoções</h2>
-            [span_5](start_span)<p style="font-size:0.8rem; color:#666; text-align:center;">Identifique seus padrões emocionais[span_5](end_span).</p>
             <div class="card">
-                [span_6](start_span)<input type="text" id="e-situacao" placeholder="Dia / Acontecimento[span_6](end_span)">
-                [span_7](start_span)<input type="text" id="e-emocao" placeholder="Qual a emoção?[span_7](end_span)">
-                [span_8](start_span)<input type="number" id="e-intensidade" placeholder="Intensidade (0-10)[span_8](end_span)" min="0" max="10">
-                [span_9](start_span)<textarea id="e-reacao" placeholder="Reação / Comportamento[span_9](end_span)"></textarea>
-                <button class="btn-save" onclick="addEmocao()">REGISTRAR EMOÇÃO</button>
+                <input type="text" id="e-situacao" placeholder="Dia / Situação">
+                <input type="text" id="e-emocao" placeholder="Qual a Emoção?">
+                <input type="number" id="e-intensidade" placeholder="Intensidade (0-10)" min="0" max="10">
+                <textarea id="e-reacao" placeholder="Reação / Comportamento"></textarea>
+                <button class="btn-save" onclick="addItem('emocoes', ['e-situacao', 'e-emocao', 'e-intensidade', 'e-reacao'])">REGISTAR EMOÇÃO</button>
             </div>
-            <div id="list-emocao"></div>
+            <div id="list-emocoes"></div>
         </div>
 
     </div>
 
     <script>
-        // Banco de Dados Local
-        let db = JSON.parse(localStorage.getItem('taskmaster_pro_lula')) || { agenda: [], pensamentos: [], emocoes: [] };
+        let db = JSON.parse(localStorage.getItem('db_lula_final')) || { agenda: [], pensamentos: [], emocoes: [] };
 
-        function showView(viewName) {
+        function showView(view) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById('view-' + viewName).classList.add('active');
-            document.getElementById('nav-' + (viewName.replace('tcc-', ''))).classList.add('active');
+            document.getElementById('view-' + view).classList.add('active');
+            document.getElementById('nav-' + view).classList.add('active');
+            render();
         }
 
-        function save() {
-            localStorage.setItem('taskmaster_pro_lula', JSON.stringify(db));
-            renderAll();
-        }
-
-        // --- LÓGICA AGENDA ---
         function addAgenda() {
             const name = document.getElementById('taskName').value;
             const date = document.getElementById('taskDate').value;
@@ -108,66 +95,60 @@
             }
         }
 
-        // --- LÓGICA TCC PENSAMENTOS ---
-        function addPensamento() {
-            const situacao = document.getElementById('p-situacao').value;
-            const emocao = document.getElementById('p-emocao').value;
-            const pensamento = document.getElementById('p-pensamento').value;
-            const comportamento = document.getElementById('p-comportamento').value;
-            if(situacao && pensamento) {
-                db.pensamentos.push({ situacao, emocao, pensamento, comportamento, data: new Date().toLocaleDateString() });
-                document.querySelectorAll('#view-tcc-pensamento input, #view-tcc-pensamento textarea').forEach(i => i.value = "");
-                save();
-            }
-        }
-
-        // --- LÓGICA EMOÇÕES ---
-        function addEmocao() {
-            const situacao = document.getElementById('e-situacao').value;
-            const emocao = document.getElementById('e-emocao').value;
-            const intensidade = document.getElementById('e-intensidade').value;
-            const reacao = document.getElementById('e-reacao').value;
-            if(situacao && emocao) {
-                db.emocoes.push({ situacao, emocao, intensidade, reacao, data: new Date().toLocaleDateString() });
-                document.querySelectorAll('#view-tcc-emocao input, #view-tcc-emocao textarea').forEach(i => i.value = "");
-                save();
-            }
-        }
-
-        function remove(type, index) {
-            if(confirm("Excluir registro?")) {
-                db[type].splice(index, 1);
-                save();
-            }
-        }
-
-        function renderAll() {
-            // Render Agenda
-            const listA = document.getElementById('list-agenda');
-            listA.innerHTML = '';
-            db.agenda.forEach((item, i) => {
-                listA.innerHTML += <div class="list-item"><div><b>${item.name}</b><br><small>${item.date} às ${item.time}</small></div><button class="del-btn" onclick="remove('agenda', ${i})">X</button></div>;
+        function addItem(type, fields) {
+            let entry = { data: new Date().toLocaleDateString('pt-BR') };
+            fields.forEach(f => {
+                entry[f.split('-')[1]] = document.getElementById(f).value;
+                document.getElementById(f).value = "";
             });
+            db[type].push(entry);
+            save();
+        }
+
+        function remove(type, i) {
+            if(confirm("Eliminar este registo?")) {
+                db[type].splice(i, 1);
+                save();
+            }
+        }
+
+        function save() {
+            localStorage.setItem('db_lula_final', JSON.stringify(db));
+            render();
+        }
+
+        function render() {
+            // Render Agenda
+            const lA = document.getElementById('list-agenda');
+            lA.innerHTML = db.agenda.map((item, i) => `
+                <div class="list-item">
+                    <div><b>${item.name}</b><br><small>${item.date.split('-').reverse().join('/')} às ${item.time}</small></div>
+                    <button class="del-btn" onclick="remove('agenda', ${i})">X</button>
+                </div>`).join('');
 
             // Render Pensamentos
-            const listP = document.getElementById('list-pensamento');
-            listP.innerHTML = '';
-            db.pensamentos.forEach((item, i) => {
-                listP.innerHTML += <div class="list-item"><div><span class="badge">TCC</span> <b>${item.data}</b><br><small><b>Sit:</b> ${item.situacao}<br><b>Pens:</b> ${item.pensamento}</small></div><button class="del-btn" onclick="remove('pensamentos', ${i})">X</button></div>;
-            });
+            const lP = document.getElementById('list-pensamentos');
+            lP.innerHTML = db.pensamentos.map((item, i) => `
+                <div class="list-item">
+                    <span class="label-tcc">DATA: ${item.data}</span>
+                    <b>Situação:</b> ${item.situacao}<br>
+                    <b>Pensamento:</b> ${item.pensamento}<br>
+                    <button class="del-btn" onclick="remove('pensamentos', ${i})">X</button>
+                </div>`).join('');
 
             // Render Emoções
-            const listE = document.getElementById('list-emocao');
-            listE.innerHTML = '';
-            db.emocoes.forEach((item, i) => {
-                listE.innerHTML += <div class="list-item"><div><span class="badge">EMOÇÃO (${item.intensidade}/10)</span><br><b>${item.emocao}</b> - ${item.situacao}</div><button class="del-btn" onclick="remove('emocoes', ${i})">X</button></div>;
-            });
+            const lE = document.getElementById('list-emocoes');
+            lE.innerHTML = db.emocoes.map((item, i) => `
+                <div class="list-item">
+                    <b>${item.emocao} (${item.intensidade}/10)</b><br>
+                    <small>${item.situacao}</small>
+                    <button class="del-btn" onclick="remove('emocoes', ${i})">X</button>
+                </div>`).join('');
         }
 
         window.onload = () => {
             document.getElementById('taskDate').valueAsDate = new Date();
-            renderAll();
-            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+            render();
         };
     </script>
 </body>
