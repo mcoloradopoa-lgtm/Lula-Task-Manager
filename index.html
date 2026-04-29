@@ -2,126 +2,108 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaskMaster Lula</title>
     <style>
         body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
-        .nav { display: flex; background: #1a73e8; position: sticky; top: 0; }
-        .nav button { flex: 1; padding: 15px; border: none; background: none; color: white; font-weight: bold; }
-        .p-20 { padding: 20px; }
-        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .view { display: none; }
-        .active { display: block; }
-        input, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn-blue { background: #1a73e8; color: white; font-weight: bold; border: none; }
-        .btn-green { background: #28a745; color: white; font-weight: bold; border: none; }
-        .log-item { background: #fff; padding: 10px; border-bottom: 1px solid #ddd; font-size: 14px; }
+        .nav { display: flex; background: #1a73e8; width: 100%; position: sticky; top: 0; }
+        .nav button { flex: 1; padding: 20px 5px; border: 1px solid #ffffff44; background: #1a73e8; color: white; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .nav button:active { background: #000; color: #fff; }
+        .container { padding: 15px; max-width: 500px; margin: auto; }
+        .view { display: none; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .view.active { display: block; }
+        input, textarea, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        .btn-save { background: #1a73e8; color: white; border: none; font-weight: bold; }
+        .btn-csv { background: #28a745; color: white; border: none; font-weight: bold; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="nav">
-    <button onclick="changeTab('agenda')">AGENDA</button>
-    <button onclick="changeTab('tcc1')">TCC 1</button>
-    <button onclick="changeTab('tcc2')">TCC 2</button>
+    <button id="btn-agenda">AGENDA</button>
+    <button id="btn-tcc1">TCC PENS.</button>
+    <button id="btn-tcc2">TCC EMOC.</button>
 </div>
 
-<div class="p-20">
-    <button class="btn-green" onclick="exportData()">📥 BAIXAR CSV (PIPE)</button>
+<div class="container">
+    <button class="btn-csv" id="btn-export">📥 BAIXAR BACKUP (PIPE |)</button>
 
     <div id="view-agenda" class="view active">
-        <h3>📅 Agenda</h3>
+        <h3>📅 Agenda Diária</h3>
         <input type="text" id="v1a" placeholder="Tarefa">
         <input type="date" id="v2a">
         <input type="time" id="v3a">
-        <button class="btn-blue" onclick="add('AGENDA', 'v1a', 'v2a', 'v3a', '')">SALVAR AGENDA</button>
-        <div id="list-agenda"></div>
+        <button class="btn-save" id="save-agenda">SALVAR AGENDA</button>
     </div>
 
     <div id="view-tcc1" class="view">
-        <h3>🧠 Pensamentos (PDF 1)</h3>
+        <h3>🧠 Pensamentos (TCC)</h3>
         <textarea id="v1p" placeholder="Situação"></textarea>
         <input type="text" id="v2p" placeholder="Emoção">
         <textarea id="v3p" placeholder="Pensamento Automático"></textarea>
         <textarea id="v4p" placeholder="Comportamento"></textarea>
-        <button class="btn-blue" onclick="add('PENSAMENTO', 'v1p', 'v2p', 'v3p', 'v4p')">SALVAR TCC 1</button>
-        <div id="list-tcc1"></div>
+        <button class="btn-save" id="save-tcc1">SALVAR PENSAMENTO</button>
     </div>
 
     <div id="view-tcc2" class="view">
-        <h3>🎭 Emoções (PDF 2)</h3>
-        <input type="text" id="v1e" placeholder="Dia/Situação">
-        <input type="text" id="v2e" placeholder="Emoção">
-        <input type="number" id="v3e" placeholder="Intensidade (0-10)">
-        <textarea id="v4e" placeholder="Reação"></textarea>
-        <button class="btn-blue" onclick="add('EMOCAO', 'v1e', 'v2e', 'v3e', 'v4e')">SALVAR TCC 2</button>
-        <div id="list-tcc2"></div>
+        <h3>🎭 Emoções (TCC)</h3>
+        <input type="text" id="e1" placeholder="Dia/Situação">
+        <input type="text" id="e2" placeholder="Emoção">
+        <input type="number" id="e3" placeholder="Intensidade (0-10)">
+        <textarea id="e4" placeholder="Reação"></textarea>
+        <button class="btn-save" id="save-tcc2">SALVAR EMOÇÃO</button>
     </div>
 </div>
 
 <script>
-    // Chave nova para forçar o reset da memória travada
-    const DB_KEY = 'db_lula_FINAL_REBOOT';
+    const DB_KEY = 'LULA_DB_FINAL_V20';
     let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-    function changeTab(id) {
+    // Função para trocar de aba
+    function changeTab(tabId) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-' + id).classList.add('active');
-        render();
+        document.getElementById('view-' + tabId).classList.add('active');
     }
 
-    function add(tipo, f1, f2, f3, f4) {
+    // Ouvintes de Clique (Mais estável que onclick)
+    document.getElementById('btn-agenda').addEventListener('click', () => changeTab('agenda'));
+    document.getElementById('btn-tcc1').addEventListener('click', () => changeTab('tcc1'));
+    document.getElementById('btn-tcc2').addEventListener('click', () => changeTab('tcc2'));
+
+    // Função Salvar Genérica
+    function saveData(tipo, fields) {
         const entry = {
             tipo: tipo,
-            c1: document.getElementById(f1).value,
-            c2: document.getElementById(f2).value,
-            c3: document.getElementById(f3).value,
-            c4: f4 ? document.getElementById(f4).value : '-',
-            data: new Date().toLocaleString()
+            c1: document.getElementById(fields[0]).value,
+            c2: document.getElementById(fields[1]).value,
+            c3: document.getElementById(fields[2]).value,
+            c4: fields[3] ? document.getElementById(fields[3]).value : '-',
+            data: new Date().toLocaleString('pt-BR')
         };
+        
+        if(!entry.c1) return alert("Preencha o campo principal!");
+        
         data.push(entry);
         localStorage.setItem(DB_KEY, JSON.stringify(data));
-        
-        // Limpa campos
-        [f1, f2, f3, f4].forEach(f => { if(f) document.getElementById(f).value = ''; });
-        
-        if(tipo === 'AGENDA') schedulePush(entry);
-        render();
         alert("Salvo com sucesso!");
+        
+        fields.forEach(f => { if(f) document.getElementById(f).value = ''; });
     }
 
-    function schedulePush(t) {
-        if (!("Notification" in window)) return;
-        Notification.requestPermission().then(p => {
-            if (p === "granted") {
-                const target = new Date(t.c2 + 'T' + t.c3);
-                const now = new Date();
-                let time = (target.toDateString() === now.toDateString()) ? target : new Date(t.c2 + 'T08:00:00');
-                const diff = time.getTime() - now.getTime();
-                if (diff > 0) setTimeout(() => { new Notification("📍 " + t.c1); }, diff);
-            }
-        });
-    }
+    document.getElementById('save-agenda').addEventListener('click', () => saveData('AGENDA', ['v1a', 'v2a', 'v3a']));
+    document.getElementById('save-tcc1').addEventListener('click', () => saveData('TCC_PENS', ['v1p', 'v2p', 'v3p', 'v4p']));
+    document.getElementById('save-tcc2').addEventListener('click', () => saveData('TCC_EMOC', ['e1', 'e2', 'e3', 'e4']));
 
-    function exportData() {
-        if (data.length === 0) return alert("Vazio!");
-        let csv = "TIPO|CAMPO1|CAMPO2|CAMPO3|CAMPO4|DATA\n";
+    document.getElementById('btn-export').addEventListener('click', () => {
+        if (data.length === 0) return alert("Não há dados!");
+        let csv = "TIPO|CAMPO1|CAMPO2|CAMPO3|CAMPO4|DATA_REGISTRO\n";
         data.forEach(i => { csv += ${i.tipo}|${i.c1}|${i.c2}|${i.c3}|${i.c4}|${i.data}\n; });
         const blob = new Blob([csv], { type: 'text/csv' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'lula_backup.csv';
+        a.download = 'backup_lula.csv';
         a.click();
-    }
-
-    function render() {
-        const currentView = document.querySelector('.view.active').id.split('-')[1];
-        const list = document.getElementById('list-' + currentView);
-        const filtered = data.filter(i => i.tipo.toLowerCase().includes(currentView.replace('tcc','')) || (currentView === 'agenda' && i.tipo === 'AGENDA'));
-        list.innerHTML = filtered.map(i => <div class="log-item"><b>${i.c1}</b> - ${i.c2}</div>).join('');
-    }
-
-    window.onload = render;
+    });
 </script>
 </body>
 </html>
