@@ -3,82 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskMaster & TCC</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a73e8">
+    <title>TaskMaster Lula</title>
     <style>
-        :root { --primary: #1a73e8; --bg: #f4f7f6; --card: #ffffff; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; }
-        nav { background: var(--primary); display: flex; justify-content: space-around; padding: 15px 0; position: sticky; top: 0; z-index: 100; }
-        nav button { background: none; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        body { font-family: sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
+        nav { background: #1a73e8; display: flex; padding: 15px 0; position: sticky; top: 0; z-index: 100; }
+        nav button { flex: 1; background: none; border: none; color: white; font-weight: bold; cursor: pointer; }
         .container { padding: 20px; max-width: 500px; margin: auto; }
         .view { display: none; }
         .view.active { display: block; }
-        .card { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
-        .btn-save { background: var(--primary); color: white; border: none; font-weight: bold; }
-        .btn-csv { background: #28a745; color: white; border: none; font-weight: bold; margin-bottom: 10px; }
-        .item { background: white; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid var(--primary); font-size: 0.9rem; }
+        .btn-save { background: #1a73e8; color: white; border: none; font-weight: bold; }
+        .btn-csv { background: #28a745; color: white; border: none; font-weight: bold; }
+        .item { background: white; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid #1a73e8; }
     </style>
 </head>
 <body>
 
 <nav>
-    <button onclick="showView('agenda')">📅 AGENDA</button>
-    <button onclick="showView('tcc1')">🧠 PENSAMENTOS</button>
-    <button onclick="showView('tcc2')">🎭 EMOÇÕES</button>
+    <button onclick="showView('agenda')">AGENDA</button>
+    <button onclick="showView('tcc1')">TCC 1</button>
+    <button onclick="showView('tcc2')">TCC 2</button>
 </nav>
 
 <div class="container">
-    <button class="btn-csv" onclick="exportMasterCSV()">📥 BAIXAR ARQUIVO ÚNICO (CSV)</button>
+    <button class="btn-csv" onclick="exportMasterCSV()">📥 BAIXAR CSV UNIFICADO</button>
 
     <div id="view-agenda" class="view active">
-        <h2>Agenda Diária</h2>
+        <h2>📅 Agenda</h2>
         <div class="card">
-            <input type="text" id="taskName" placeholder="Tarefa...">
+            <input type="text" id="taskName" placeholder="Tarefa">
             <input type="date" id="taskDate">
             <input type="time" id="taskTime">
-            <button class="btn-save" onclick="addAgenda()">SALVAR E AGENDAR</button>
+            <button class="btn-save" onclick="addAgenda()">SALVAR AGENDA</button>
         </div>
         <div id="list-agenda"></div>
     </div>
 
     <div id="view-tcc1" class="view">
-        <h2>Diário de Pensamentos</h2>
+        <h2>🧠 TCC - Pensamentos</h2>
         <div class="card">
             <textarea id="p-situacao" placeholder="Situação"></textarea>
             <input type="text" id="p-emocao" placeholder="Emoção">
             <textarea id="p-pensamento" placeholder="Pensamento Automático"></textarea>
             <textarea id="p-comportamento" placeholder="Comportamento Resultado"></textarea>
-            <button class="btn-save" onclick="addTCC('PENSAMENTO', ['p-situacao', 'p-emocao', 'p-pensamento', 'p-comportamento'])">SALVAR TCC</button>
+            <button class="btn-save" onclick="addTCC('PENSAMENTO', ['p-situacao', 'p-emocao', 'p-pensamento', 'p-comportamento'])">SALVAR TCC 1</button>
         </div>
         <div id="list-tcc1"></div>
     </div>
 
     <div id="view-tcc2" class="view">
-        <h2>Diário de Emoções</h2>
+        <h2>🎭 TCC - Emoções</h2>
         <div class="card">
             <input type="text" id="e-situacao" placeholder="Dia/Situação">
             <input type="text" id="e-emocao" placeholder="Emoção">
             <input type="number" id="e-intensidade" placeholder="Intensidade (0-10)">
-            <textarea id="e-reacao" placeholder="Reação / Comportamento"></textarea>
-            <button class="btn-save" onclick="addTCC('EMOCAO', ['e-situacao', 'e-emocao', 'e-intensidade', 'e-reacao'])">SALVAR EMOÇÃO</button>
+            <textarea id="e-reacao" placeholder="Reação/Comportamento"></textarea>
+            <button class="btn-save" onclick="addTCC('EMOCAO', ['e-situacao', 'e-emocao', 'e-intensidade', 'e-reacao'])">SALVAR TCC 2</button>
         </div>
         <div id="list-tcc2"></div>
     </div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('lula_db_v10')) || [];
+    // Usando uma chave de banco nova para evitar conflitos
+    let db = JSON.parse(localStorage.getItem('db_lula_v11')) || [];
 
     function showView(id) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-' + id).classList.add('active');
+        const views = ['agenda', 'tcc1', 'tcc2'];
+        views.forEach(v => document.getElementById('view-' + v).style.display = 'none');
+        document.getElementById('view-' + id).style.display = 'block';
         render();
     }
 
     function save() {
-        localStorage.setItem('lula_db_v10', JSON.stringify(db));
+        localStorage.setItem('db_lula_v11', JSON.stringify(db));
         render();
     }
 
@@ -87,9 +86,9 @@
         const v2 = document.getElementById('taskDate').value;
         const v3 = document.getElementById('taskTime').value || "00:00";
         if(v1 && v2) {
-            const task = { tipo: 'AGENDA', v1, v2, v3, v4: '-', data: new Date().toLocaleString() };
-            db.push(task);
-            scheduleNotification(task);
+            const entry = { tipo: 'AGENDA', v1, v2, v3, v4: '-', data: new Date().toLocaleString() };
+            db.push(entry);
+            scheduleNotification(entry);
             document.getElementById('taskName').value = "";
             save();
         }
@@ -114,8 +113,8 @@
         Notification.requestPermission().then(p => {
             if (p === "granted") {
                 const now = new Date();
-                const taskTime = new Date(task.v2 + 'T' + task.v3);
-                let trigger = (taskTime.toDateString() === now.toDateString()) ? taskTime : new Date(task.v2 + 'T08:00:00');
+                const tDate = new Date(task.v2 + 'T' + task.v3);
+                let trigger = (tDate.toDateString() === now.toDateString()) ? tDate : new Date(task.v2 + 'T08:00:00');
                 const diff = trigger.getTime() - now.getTime();
                 if (diff > 0) setTimeout(() => { new Notification("📍 " + task.v1); }, diff);
             }
@@ -133,14 +132,14 @@
     }
 
     function render() {
-        const activeView = document.querySelector('.view.active').id.split('-')[1];
-        const list = document.getElementById('list-' + activeView);
-        if (!list) return;
-        const filtered = db.filter(i => i.tipo.toLowerCase().includes(activeView.replace('tcc','')) || (activeView === 'agenda' && i.tipo === 'AGENDA'));
-        list.innerHTML = filtered.map(i => <div class="item"><b>${i.v1}</b><br><small>${i.v2} ${i.v3}</small></div>).join('');
+        // Renderização simples apenas para a agenda para teste
+        const list = document.getElementById('list-agenda');
+        const filtered = db.filter(i => i.tipo === 'AGENDA');
+        list.innerHTML = filtered.map(i => <div class="item"><b>${i.v1}</b><br>${i.v2}</div>).join('');
     }
 
-    window.onload = render;
+    // Inicia na agenda
+    window.onload = () => { showView('agenda'); };
 </script>
 </body>
 </html>
