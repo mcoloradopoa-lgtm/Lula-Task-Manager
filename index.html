@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaskMaster & TCC</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a73e8">
     <style>
         :root { --primary: #1a73e8; --bg: #f4f7f6; --card: #ffffff; }
         body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
@@ -19,9 +17,9 @@
         h2 { color: var(--primary); font-size: 1.2rem; text-align: center; margin-top: 0; }
         input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
         button.btn-save { background: var(--primary); color: white; border: none; font-weight: bold; }
+        button.btn-copy { background: #28a745; color: white; border: none; font-weight: bold; margin-bottom: 15px; }
         .list-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
         .del-btn { position: absolute; right: 10px; top: 10px; background: #fee; color: #c00; border: none; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; }
-        .label-tcc { font-size: 0.8rem; font-weight: bold; color: #666; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -33,6 +31,7 @@
     </nav>
 
     <div class="container">
+        <button class="btn-copy" onclick="copyToClipboard()">📋 COPIAR DADOS (PIPE |)</button>
         
         <div id="view-agenda" class="view active">
             <h2>Minha Agenda</h2>
@@ -70,7 +69,6 @@
             </div>
             <div id="list-emocoes"></div>
         </div>
-
     </div>
 
     <script>
@@ -84,12 +82,41 @@
             render();
         }
 
+        // --- LÓGICA DE NOTIFICAÇÃO PUSH ---
+        function schedulePush(name, date, time) {
+            if (!("Notification" in window)) return;
+            
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    const now = new Date();
+                    const taskTime = new Date(date + 'T' + time);
+                    
+                    let triggerTime = taskTime;
+                    // Se não for hoje, agenda para 08:00 do dia da tarefa
+                    if (taskTime.toDateString() !== now.toDateString()) {
+                        triggerTime = new Date(date + 'T08:00:00');
+                    }
+
+                    const diff = triggerTime.getTime() - now.getTime();
+                    if (diff > 0) {
+                        setTimeout(() => {
+                            new Notification("📍 Agenda: " + name, { 
+                                body: "Tarefa programada para agora!",
+                                icon: "https://cdn-icons-png.flaticon.com/512/591/591576.png" 
+                            });
+                        }, diff);
+                    }
+                }
+            });
+        }
+
         function addAgenda() {
             const name = document.getElementById('taskName').value;
             const date = document.getElementById('taskDate').value;
             const time = document.getElementById('taskTime').value || "00:00";
             if(name && date) {
                 db.agenda.push({ name, date, time });
+                schedulePush(name, date, time);
                 document.getElementById('taskName').value = "";
                 save();
             }
@@ -105,6 +132,20 @@
             save();
         }
 
+        // --- COPIAR PARA A MEMÓRIA (PIPE) ---
+        function copyToClipboard() {
+            let text = "TIPO|CAMPO1|CAMPO2|CAMPO3|CAMPO4|DATA\n";
+            db.agenda.forEach(i => text += AGENDA|${i.name}|${i.date}|${i.time}|-|${i.date}\n);
+            db.pensamentos.forEach(i => text += TCC_PENS|${i.situacao}|${i.emocao}|${i.pensamento}|${i.comportamento}|${i.data}\n);
+            db.emocoes.forEach(i => text += TCC_EMOC|${i.situacao}|${i.emocao}|${i.intensidade}|${i.reacao}|${i.data}\n);
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Dados copiados com sucesso! Agora é só colar no seu editor.");
+            }).catch(err => {
+                alert("Erro ao copiar: ", err);
+            });
+        }
+
         function remove(type, i) {
             if(confirm("Eliminar este registo?")) {
                 db[type].splice(i, 1);
@@ -118,7 +159,6 @@
         }
 
         function render() {
-            // Render Agenda
             const lA = document.getElementById('list-agenda');
             lA.innerHTML = db.agenda.map((item, i) => `
                 <div class="list-item">
@@ -126,17 +166,15 @@
                     <button class="del-btn" onclick="remove('agenda', ${i})">X</button>
                 </div>`).join('');
 
-            // Render Pensamentos
             const lP = document.getElementById('list-pensamentos');
             lP.innerHTML = db.pensamentos.map((item, i) => `
                 <div class="list-item">
-                    <span class="label-tcc">DATA: ${item.data}</span>
+                    <small>DATA: ${item.data}</small><br>
                     <b>Situação:</b> ${item.situacao}<br>
                     <b>Pensamento:</b> ${item.pensamento}<br>
                     <button class="del-btn" onclick="remove('pensamentos', ${i})">X</button>
                 </div>`).join('');
 
-            // Render Emoções
             const lE = document.getElementById('list-emocoes');
             lE.innerHTML = db.emocoes.map((item, i) => `
                 <div class="list-item">
@@ -149,6 +187,7 @@
         window.onload = () => {
             document.getElementById('taskDate').valueAsDate = new Date();
             render();
+            if ("Notification" in window) Notification.requestPermission();
         };
     </script>
 </body>
