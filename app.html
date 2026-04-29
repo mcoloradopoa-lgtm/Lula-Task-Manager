@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TaskMaster Lula</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
+        /* Botões gigantes para garantir que o telemóvel sinta o toque */
+        .nav { display: flex; background: #1a73e8; width: 100%; }
+        .nav button { flex: 1; padding: 25px 5px; border: 1px solid #fff; background: #1a73e8; color: white; font-weight: bold; font-size: 14px; text-transform: uppercase; }
+        /* Feedback visual imediato ao tocar */
+        .nav button:active { background: #000 !important; color: #ffeb3b !important; }
+        .container { padding: 15px; }
+        .view { display: none; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .active { display: block; }
+        input, textarea, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        .btn-save { background: #1a73e8; color: white; border: none; font-weight: bold; }
+        .btn-csv { background: #28a745; color: white; border: none; font-weight: bold; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <button type="button" onclick="changeTab('agenda')">AGENDA</button>
+    <button type="button" onclick="changeTab('tcc1')">TCC PENS.</button>
+    <button type="button" onclick="changeTab('tcc2')">TCC EMOC.</button>
+</div>
+
+<div class="container">
+    <button class="btn-csv" onclick="exportData()">📥 BAIXAR BACKUP (PIPE |)</button>
+
+    <div id="view-agenda" class="view active">
+        <h3>📅 Agenda Diária</h3>
+        <input type="text" id="v1a" placeholder="Tarefa">
+        <input type="date" id="v2a">
+        <input type="time" id="v3a">
+        <button class="btn-save" onclick="add('AGENDA', 'v1a', 'v2a', 'v3a', '')">SALVAR AGENDA</button>
+    </div>
+
+    <div id="view-tcc1" class="view">
+        <h3>🧠 Pensamentos (PDF 1)</h3>
+        <textarea id="v1p" placeholder="Situação"></textarea>
+        <input type="text" id="v2p" placeholder="Emoção">
+        <textarea id="v3p" placeholder="Pensamento Automático"></textarea>
+        <textarea id="v4p" placeholder="Comportamento"></textarea>
+        <button class="btn-save" onclick="add('TCC_PENS', 'v1p', 'v2p', 'v3p', 'v4p')">SALVAR PENSAMENTO</button>
+    </div>
+
+    <div id="view-tcc2" class="view">
+        <h3>🎭 Emoções (PDF 2)</h3>
+        <input type="text" id="e1" placeholder="Dia/Situação">
+        <input type="text" id="e2" placeholder="Emoção">
+        <input type="number" id="e3" placeholder="Intensidade (0-10)">
+        <textarea id="e4" placeholder="Reação"></textarea>
+        <button class="btn-save" onclick="add('TCC_EMOC', 'e1', 'e2', 'e3', 'e4')">SALVAR EMOÇÃO</button>
+    </div>
+</div>
+
+<script>
+    const DB_KEY = 'db_lula_V15_FINAL';
+    let data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+
+    function changeTab(id) {
+        document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+        document.getElementById('view-' + id).style.display = 'block';
+    }
+
+    function add(tipo, f1, f2, f3, f4) {
+        const val1 = document.getElementById(f1).value;
+        if(!val1) return alert("Preencha o campo principal!");
+
+        const entry = {
+            tipo: tipo,
+            c1: val1,
+            c2: document.getElementById(f2).value,
+            c3: document.getElementById(f3).value,
+            c4: f4 ? document.getElementById(f4).value : '-',
+            data: new Date().toLocaleString('pt-BR')
+        };
+        
+        data.push(entry);
+        localStorage.setItem(DB_KEY, JSON.stringify(data));
+        alert("Registo Salvo!");
+        
+        // Limpar campos
+        [f1, f2, f3, f4].forEach(f => { if(f) document.getElementById(f).value = ''; });
+        
+        if(tipo === 'AGENDA') schedulePush(entry);
+    }
+
+    function exportData() {
+        if (data.length === 0) return alert("Não há dados!");
+        let csv = "TIPO|CAMPO1|CAMPO2|CAMPO3|CAMPO4|DATA_REGISTRO\n";
+        data.forEach(i => { csv += ${i.tipo}|${i.c1}|${i.c2}|${i.c3}|${i.c4}|${i.data}\n; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'backup_lula.csv';
+        a.click();
+    }
+
+    function schedulePush(t) {
+        if (!("Notification" in window)) return;
+        Notification.requestPermission().then(p => {
+            if (p === "granted") {
+                const target = new Date(t.c2 + 'T' + t.c3);
+                const now = new Date();
+                let time = (target.toDateString() === now.toDateString()) ? target : new Date(t.c2 + 'T08:00:00');
+                const diff = time.getTime() - now.getTime();
+                if (diff > 0) setTimeout(() => { new Notification("📍 Lembrete: " + t.c1); }, diff);
+            }
+        });
+    }
+</script>
+</body>
+</html>
