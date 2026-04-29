@@ -3,150 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TaskMaster & TCC Pro</title>
+    <title>TaskMaster & TCC</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a73e8">
     <style>
         :root { --primary: #1a73e8; --bg: #f4f7f6; --card: #ffffff; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg); margin: 0; padding: 0; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; }
         nav { background: var(--primary); display: flex; justify-content: space-around; padding: 15px 0; position: sticky; top: 0; z-index: 100; }
-        nav button { background: none; border: none; color: white; font-weight: bold; font-size: 0.8rem; cursor: pointer; opacity: 0.7; }
-        nav button.active { opacity: 1; border-bottom: 2px solid white; }
-        .container { padding: 20px; max-width: 600px; margin: auto; }
+        nav button { background: none; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        .container { padding: 20px; max-width: 500px; margin: auto; }
         .view { display: none; }
         .view.active { display: block; }
-        .card { background: var(--card); padding: 18px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
         input, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
-        button.btn-save { background: var(--primary); color: white; border: none; font-weight: bold; }
-        button.btn-export { background: #28a745; color: white; border: none; font-weight: bold; margin-top: 20px; }
-        .list-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-save { background: var(--primary); color: white; border: none; font-weight: bold; }
+        .btn-csv { background: #28a745; color: white; border: none; font-weight: bold; margin-bottom: 10px; }
+        .item { background: white; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 5px solid var(--primary); font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-    <nav>
-        <button onclick="showView('agenda')" id="nav-agenda" class="active">📅 AGENDA</button>
-        <button onclick="showView('pensamentos')" id="nav-pensamentos">🧠 TCC</button>
-        <button onclick="showView('emocoes')" id="nav-emocoes">🎭 EMOÇÕES</button>
-    </nav>
+<nav>
+    <button onclick="showView('agenda')">📅 AGENDA</button>
+    <button onclick="showView('tcc1')">🧠 PENSAMENTOS</button>
+    <button onclick="showView('tcc2')">🎭 EMOÇÕES</button>
+</nav>
 
-    <div class="container">
-        <button class="btn-export" onclick="exportMasterCSV()">📥 EXPORTAR ARQUIVO UNIFICADO (.CSV)</button>
-        <hr>
+<div class="container">
+    <button class="btn-csv" onclick="exportMasterCSV()">📥 BAIXAR ARQUIVO ÚNICO (CSV)</button>
 
-        <div id="view-agenda" class="view active">
-            <h2>Agenda Diária</h2>
-            <div class="card">
-                <input type="text" id="taskName" placeholder="Tarefa...">
-                <div style="display:flex; gap:10px;"><input type="date" id="taskDate"><input type="time" id="taskTime"></div>
-                <button class="btn-save" onclick="addAgenda()">SALVAR E AGENDAR</button>
-            </div>
-            <div id="list-agenda"></div>
+    <div id="view-agenda" class="view active">
+        <h2>Agenda Diária</h2>
+        <div class="card">
+            <input type="text" id="taskName" placeholder="Tarefa...">
+            <input type="date" id="taskDate">
+            <input type="time" id="taskTime">
+            <button class="btn-save" onclick="addAgenda()">SALVAR E AGENDAR</button>
         </div>
-
-        <div id="view-pensamentos" class="view">
-            <h2>Diário de Pensamentos</h2>
-            <div class="card">
-                <textarea id="p-situacao" placeholder="Situação"></textarea>
-                <input type="text" id="p-emocao" placeholder="Emoção"></textarea>
-                <textarea id="p-pensamento" placeholder="Pensamento Automático"></textarea>
-                <textarea id="p-comportamento" placeholder="Comportamento Resultado"></textarea>
-                <button class="btn-save" onclick="addItem('pensamentos', ['p-situacao', 'p-emocao', 'p-pensamento', 'p-comportamento'])">REGISTRAR PENSAMENTO</button>
-            </div>
-            <div id="list-pensamentos"></div>
-        </div>
-
-        <div id="view-emocoes" class="view">
-            <h2>Diário de Emoções</h2>
-            <div class="card">
-                <input type="text" id="e-situacao" placeholder="Dia / Situação">
-                <input type="text" id="e-emocao" placeholder="Qual a emoção?">
-                <input type="number" id="e-intensidade" placeholder="Intensidade (0-10)">
-                <textarea id="e-reacao" placeholder="Reação / Comportamento"></textarea>
-                <button class="btn-save" onclick="addItem('emocoes', ['e-situacao', 'e-emocao', 'e-intensidade', 'e-reacao'])">REGISTRAR EMOÇÃO</button>
-            </div>
-            <div id="list-emocoes"></div>
-        </div>
+        <div id="list-agenda"></div>
     </div>
 
-    <script>
-        // Banco de dados interno (Memória do Celular)
-        let db = JSON.parse(localStorage.getItem('db_lula_master')) || [];
+    <div id="view-tcc1" class="view">
+        <h2>Diário de Pensamentos</h2>
+        <div class="card">
+            <textarea id="p-situacao" placeholder="Situação"></textarea>
+            <input type="text" id="p-emocao" placeholder="Emoção">
+            <textarea id="p-pensamento" placeholder="Pensamento Automático"></textarea>
+            <textarea id="p-comportamento" placeholder="Comportamento Resultado"></textarea>
+            <button class="btn-save" onclick="addTCC('PENSAMENTO', ['p-situacao', 'p-emocao', 'p-pensamento', 'p-comportamento'])">SALVAR TCC</button>
+        </div>
+        <div id="list-tcc1"></div>
+    </div>
 
-        function showView(view) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            document.getElementById('view-' + view).classList.add('active');
-            document.getElementById('nav-' + view).classList.add('active');
-            render();
-        }
+    <div id="view-tcc2" class="view">
+        <h2>Diário de Emoções</h2>
+        <div class="card">
+            <input type="text" id="e-situacao" placeholder="Dia/Situação">
+            <input type="text" id="e-emocao" placeholder="Emoção">
+            <input type="number" id="e-intensidade" placeholder="Intensidade (0-10)">
+            <textarea id="e-reacao" placeholder="Reação / Comportamento"></textarea>
+            <button class="btn-save" onclick="addTCC('EMOCAO', ['e-situacao', 'e-emocao', 'e-intensidade', 'e-reacao'])">SALVAR EMOÇÃO</button>
+        </div>
+        <div id="list-tcc2"></div>
+    </div>
+</div>
 
-        // AGENDAMENTO DE NOTIFICAÇÃO (Somente Agenda)
-        function scheduleNotification(task) {
-            if (!("Notification" in window)) return;
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    const now = new Date();
-                    const taskTime = new Date(task.v2 + 'T' + task.v3);
-                    let triggerTime = (taskTime.toDateString() === now.toDateString()) ? taskTime : new Date(task.v2 + 'T08:00:00');
-                    const diff = triggerTime.getTime() - now.getTime();
-                    if (diff > 0) setTimeout(() => { new Notification("📍 Agenda: " + task.v1); }, diff);
-                }
-            });
-        }
+<script>
+    let db = JSON.parse(localStorage.getItem('lula_db_v10')) || [];
 
-        // EXPORTAR ÚNICO ARQUIVO CSV COM PIPE
-        function exportMasterCSV() {
-            if (db.length === 0) return alert("Sem dados para exportar.");
-            // Cabeçalho genérico para manter o arquivo padronizado
-            const headers = "TIPO|CAMPO1|CAMPO2|CAMPO3|CAMPO4|DATA_REGISTRO";
-            const rows = db.map(item => ${item.tipo}|${item.v1}|${item.v2}|${item.v3}|${item.v4}|${item.data}).join('\n');
-            const csvContent = "data:text/csv;charset=utf-8," + headers + "\n" + rows;
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csvContent));
-            link.setAttribute("download", "lula_master_data.csv");
-            document.body.appendChild(link);
-            link.click();
-        }
+    function showView(id) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
+        render();
+    }
 
-        function addAgenda() {
-            const v1 = document.getElementById('taskName').value;
-            const v2 = document.getElementById('taskDate').value;
-            const v3 = document.getElementById('taskTime').value || "00:00";
-            if(v1 && v2) {
-                const entry = { tipo: 'AGENDA', v1, v2, v3, v4: '-', data: new Date().toLocaleDateString('pt-BR') };
-                db.push(entry);
-                scheduleNotification(entry);
-                document.getElementById('taskName').value = "";
-                save();
-            }
-        }
+    function save() {
+        localStorage.setItem('lula_db_v10', JSON.stringify(db));
+        render();
+    }
 
-        function addItem(type, fields) {
-            const entry = { 
-                tipo: type.toUpperCase(), 
-                v1: document.getElementById(fields[0]).value,
-                v2: document.getElementById(fields[1]).value,
-                v3: document.getElementById(fields[2]).value,
-                v4: document.getElementById(fields[3]).value,
-                data: new Date().toLocaleDateString('pt-BR') 
-            };
-            db.push(entry);
-            fields.forEach(f => document.getElementById(f).value = "");
+    function addAgenda() {
+        const v1 = document.getElementById('taskName').value;
+        const v2 = document.getElementById('taskDate').value;
+        const v3 = document.getElementById('taskTime').value || "00:00";
+        if(v1 && v2) {
+            const task = { tipo: 'AGENDA', v1, v2, v3, v4: '-', data: new Date().toLocaleString() };
+            db.push(task);
+            scheduleNotification(task);
+            document.getElementById('taskName').value = "";
             save();
         }
+    }
 
-        function save() { localStorage.setItem('db_lula_master', JSON.stringify(db)); render(); }
+    function addTCC(tipo, fields) {
+        const entry = {
+            tipo: tipo,
+            v1: document.getElementById(fields[0]).value,
+            v2: document.getElementById(fields[1]).value,
+            v3: document.getElementById(fields[2]).value,
+            v4: document.getElementById(fields[3]).value,
+            data: new Date().toLocaleString()
+        };
+        db.push(entry);
+        fields.forEach(f => document.getElementById(f).value = "");
+        save();
+    }
 
-        function render() {
-            // Renderiza apenas os itens do tipo atual na lista para não confundir
-            const currentView = document.querySelector('.view.active').id.replace('view-', '').toUpperCase();
-            const listId = 'list-' + currentView.toLowerCase();
-            const listEl = document.getElementById(listId);
-            listEl.innerHTML = db.filter(i => i.tipo === currentView).map(i => <div class="list-item"><b>${i.v1}</b><br><small>${i.v2} | ${i.v3}</small></div>).join('');
-        }
+    function scheduleNotification(task) {
+        if (!("Notification" in window)) return;
+        Notification.requestPermission().then(p => {
+            if (p === "granted") {
+                const now = new Date();
+                const taskTime = new Date(task.v2 + 'T' + task.v3);
+                let trigger = (taskTime.toDateString() === now.toDateString()) ? taskTime : new Date(task.v2 + 'T08:00:00');
+                const diff = trigger.getTime() - now.getTime();
+                if (diff > 0) setTimeout(() => { new Notification("📍 " + task.v1); }, diff);
+            }
+        });
+    }
 
-        window.onload = () => { render(); if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js'); };
-    </script>
+    function exportMasterCSV() {
+        if (db.length === 0) return alert("Sem dados!");
+        let csv = "TIPO|CAMPO1|CAMPO2|CAMPO3|CAMPO4|DATA\n";
+        db.forEach(i => { csv += ${i.tipo}|${i.v1}|${i.v2}|${i.v3}|${i.v4}|${i.data}\n; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'lula_master.csv'; a.click();
+    }
+
+    function render() {
+        const activeView = document.querySelector('.view.active').id.split('-')[1];
+        const list = document.getElementById('list-' + activeView);
+        if (!list) return;
+        const filtered = db.filter(i => i.tipo.toLowerCase().includes(activeView.replace('tcc','')) || (activeView === 'agenda' && i.tipo === 'AGENDA'));
+        list.innerHTML = filtered.map(i => <div class="item"><b>${i.v1}</b><br><small>${i.v2} ${i.v3}</small></div>).join('');
+    }
+
+    window.onload = render;
+</script>
 </body>
 </html>
